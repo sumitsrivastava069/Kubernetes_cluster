@@ -1,0 +1,35 @@
+sudo apt-get update
+sudo apt-get install -y apt-transport-https ca-certificates curl
+sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl ##disbale auto-upgrade
+
+#<<<<<<<<<<MANUAL>>>>>>>>>>>>>>#
+
+###configure overlay network####
+tee /etc/modules-load.d/containerd.conf <<EOF
+overlay
+br_netfilter
+EOF
+
+
+#<<<<<<<<Disbale Cri-o plugin>>>>>>>>>>>>>>>>>#
+#disabled_plugins = ["cri"]
+#####reset configuration
+modprobe overlay
+modprobe br_netfilter
+############### enable port forwarding in #############
+tee /etc/sysctl.d/kubernetes.conf<<EOF
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+EOF
+
+##Restart containerd service###
+service restart containerd 
+
+
+######CNI NETWORK###
+kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
