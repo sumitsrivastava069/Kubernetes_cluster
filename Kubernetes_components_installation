@@ -16,6 +16,7 @@ EOF
 
 
 #<<<<<<<<Disbale Cri-o plugin>>>>>>>>>>>>>>>>>#
+vim /etc/containerd/config.toml
 #disabled_plugins = ["cri"]
 #####reset configuration
 modprobe overlay
